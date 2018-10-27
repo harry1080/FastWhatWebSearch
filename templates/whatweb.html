@@ -1,0 +1,87 @@
+{% extends "base.html" %}
+{% block index %}
+    <div class="container">
+        <div class="row">
+            <h1>FastWhatWebSearch</h1>
+        <div class="input-group input-group-lg">
+            <span class="input-group-addon">Statement</span>
+            <input type="text" class="form-control query" placeholder="搜索语句" name="query" value="target:http://payloads.online">
+        </div>
+        <div class="text-right" style="padding-top: 20px">
+            <button class="btn btn-primary" id="search">搜索</button>
+        </div>
+        <table class="table">
+            <caption>
+                搜索语法：
+                <span class="label label-default syntax">target</span>、
+                <span class="label label-default syntax">status</span>、
+                <span class="label label-default syntax">ip</span>、
+                <span class="label label-default syntax">charset</span>、
+                <span class="label label-default syntax">content-type</span>、
+                <span class="label label-default syntax">footer-hash</span>、
+                <span class="label label-default syntax">server</span>、
+                <span class="label label-default syntax">links</span>、
+                <span class="label label-default syntax">keywords</span>、
+                <span class="label label-default syntax">meta</span>、
+                <span class="label label-default syntax">php</span>、
+                <span class="label label-default syntax">title</span>、
+                <span class="label label-default syntax">by</span>
+            </caption>
+                <thead>
+                    <tr>
+                        <th>ID</th>
+                        <th>Target</th>
+                        <th>IP</th>
+                        <th>Status</th>
+                        <th>Title</th>
+                        <th>HTTP-Headers</th>
+                    </tr>
+                </thead>
+                <tbody>
+                </tbody>
+            </table>
+            </div>
+    </div>
+    <script language="JavaScript">
+    $(".syntax").click(function () {
+        var query = $(this).text();
+        $(".query").val(query+":");
+    });
+            $("#search").click(function(){
+                var tbody = $("tbody").html('');
+                $.getJSON('{{ url_for('api') }}',
+                    {'query':$(".query").val()},
+                    function (result) {
+                    if(result.status !== 0 ){
+                        alert(result.msg);
+                        return false;
+                    }
+                    console.log("I got "+ result.res_list.length + " msg !");
+                    console.log(result);
+                    for(var i=0;i<result.res_list.length;i++){
+                        var _id = result.res_list[i]._id;
+                        var target = result.res_list[i].target;
+                        var http_status = result.res_list[i].http_status;
+                        var title = result.res_list[i].plugins['Title'];
+                        var IP = result.res_list[i].plugins['IP'].string.join(',');
+                        if(title === undefined){
+                            title = 'None';
+                        }else{
+                            title = title.string.join(',');
+                        }
+                        tbody.append('<tr>'+
+                            '<td>'+_id+'</td>' +
+                            '<td><a href="'+target+'" target="_blank">'+target+'</td>'+
+                            '<td>'+IP+'</td>'+
+                            '<td>'+http_status+'</td>'+
+                            '<td>'+title+'</td>'+
+                        '<td>'+result.res_list[0].plugins["HTTP-Headers"].string.join('<br/>')+'</td>'+
+                        '</tr>');
+                    }
+                });
+            });
+    </script>
+{% endblock %}
+
+
+
